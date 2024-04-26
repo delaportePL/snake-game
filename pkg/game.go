@@ -49,9 +49,9 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
 	if g.board.gameOver {
-		//err := PlayAudio("medias/KEFLAVIK.mp3")
 		ebitenutil.DebugPrint(screen, fmt.Sprintf("Vous avez perdu. Votre score: %d", g.board.points))
-		err := playAudio("medias/MY SOUL V2.mp3")
+
+		err := playAudio("medias/fail.mp3")
 		if err != nil {
 			panic(err)
 		}
@@ -85,14 +85,22 @@ func playAudio(filePath string) error {
 	defer streamer.Close()
 
 	// Configurer le lecteur audio
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	err = speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	if err != nil {
+		return err
+	}
 
-	// Lecture de l'audio
-	done := make(chan bool)
+	// Lecture de l'audio une seule fois
+	done := make(chan struct{})
 	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
 		close(done)
 	})))
+
+	// Attendre que la lecture soit terminée
+
 	<-done
+	speaker.Close()
+	// Arrêter le lecteur audio
 
 	return nil
 }
