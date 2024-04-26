@@ -3,7 +3,12 @@ package pkg
 import (
 	"fmt"
 	"image/color"
+	"os"
+	"time"
 
+	"github.com/faiface/beep"
+	"github.com/faiface/beep/mp3"
+	"github.com/faiface/beep/speaker"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
@@ -44,7 +49,13 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
 	if g.board.gameOver {
+		//err := PlayAudio("medias/KEFLAVIK.mp3")
 		ebitenutil.DebugPrint(screen, fmt.Sprintf("Vous avez perdu. Votre score: %d", g.board.points))
+		err := playAudio("medias/MY SOUL V2.mp3")
+		if err != nil {
+			panic(err)
+		}
+
 	} else {
 		width := ScreenHeight / boardRows
 
@@ -56,4 +67,32 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 		ebitenutil.DebugPrint(screen, fmt.Sprintf("votre score: %d", g.board.points))
 	}
+}
+
+func playAudio(filePath string) error {
+	// Ouvrir le fichier audio
+	file, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Décoder le fichier audio
+	streamer, format, err := mp3.Decode(file)
+	if err != nil {
+		return err
+	}
+	defer streamer.Close()
+
+	// Configurer le lecteur audio
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+
+	// Lecture de l'audio
+	done := make(chan bool)
+	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
+		close(done)
+	})))
+	<-done
+
+	return nil
 }
