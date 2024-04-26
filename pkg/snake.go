@@ -1,4 +1,4 @@
-package snake
+package pkg
 
 import "github.com/hajimehoshi/ebiten/v2"
 

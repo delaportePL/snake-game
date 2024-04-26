@@ -7,11 +7,11 @@ import (
 
 type Input struct{}
 
-func NewInput() Input {
+func NewInput() *Input {
 	return &Input{}
 }
 
-func (iInput) Dir() (ebiten.Key, bool) {
+func (i *Input) Dir() (ebiten.Key, bool) {
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
 		return ebiten.KeyArrowUp, true
 	}
