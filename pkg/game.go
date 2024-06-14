@@ -43,17 +43,12 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
+
+	// Si le jeu est terminé, on affiche un message de fin de jeu avec le score
 	if g.board.gameOver {
 		ebitenutil.DebugPrint(screen, fmt.Sprintf("Vous avez perdu. Votre score: %d", g.board.points))
 		ebitenutil.DebugPrintAt(screen, "Game Over!", 200, 250)
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Score: %d", g.board.points), 200, 270)
-
-		/* err := playAudio("medias/fail.mp3")
-		if err != nil {
-			fmt.Println("Error playing audio:", err)
-		} else {
-			fmt.Println("Audio played successfully!")
-		} */
 
 	} else {
 		width := ScreenHeight / boardRows
