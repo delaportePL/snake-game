@@ -34,13 +34,16 @@ func NewBoard(rows int, cols int) *Board {
 
 func (b *Board) Update(input *Input) error {
 	if b.gameOver {
+		err := playAudio("medias/fail.mp3")
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 
-	// Calculate the update interval based on the number of points.
 	// The more points, the shorter the interval, and the faster the snake moves.
 	baseInterval := time.Millisecond * 200
-	speedIncreaseFactor := time.Millisecond * 10 // This value controls how much faster the game gets per point.
+	speedIncreaseFactor := time.Millisecond * 10
 	interval := baseInterval - time.Duration(b.points)*speedIncreaseFactor
 
 	// Ensure there is a minimum interval to prevent the game from becoming impossibly fast.
