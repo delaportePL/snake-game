@@ -53,7 +53,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 		err := playAudio("medias/fail.mp3")
 		if err != nil {
-			panic(err)
+			fmt.Println("Error playing audio:", err)
+		} else {
+			fmt.Println("Audio played successfully!")
 		}
 
 	} else {
@@ -93,6 +95,7 @@ func playAudio(filePath string) error {
 	// Lecture de l'audio une seule fois
 	done := make(chan struct{})
 	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
+		os.Exit(1)
 		close(done)
 	})))
 
