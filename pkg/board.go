@@ -2,19 +2,24 @@ package pkg
 
 import (
 	"math/rand"
+	"os"
 	"time"
 
+	"github.com/faiface/beep"
+	"github.com/faiface/beep/mp3"
+	"github.com/faiface/beep/speaker"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Board struct {
-	rows     int
-	cols     int
-	Apple    *Apple
-	snake    *Snake
-	points   int
-	gameOver bool
-	timer    time.Time
+	rows                int
+	cols                int
+	Apple               *Apple
+	snake               *Snake
+	points              int
+	gameOver            bool
+	gameOverSoundPlayed bool
+	timer               time.Time
 }
 
 func NewBoard(rows int, cols int) *Board {
@@ -34,6 +39,13 @@ func NewBoard(rows int, cols int) *Board {
 
 func (b *Board) Update(input *Input) error {
 	if b.gameOver {
+		if !b.gameOverSoundPlayed {
+			err := playAudio("medias/fail.mp3")
+			if err != nil {
+				return err
+			}
+			b.gameOverSoundPlayed = true // Mark that the game over sound has been played
+		}
 		return nil
 	}
 
@@ -102,4 +114,41 @@ func (b *Board) moveSnake() error {
 func (b *Board) snakeLeftBoard() bool {
 	head := b.snake.Head()
 	return head.x > b.cols-1 || head.y > b.rows-1 || head.x < 0 || head.y < 0
+}
+
+func playAudio(filePath string) error {
+	// Ouvrir le fichier audio
+	file, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Décoder le fichier audio
+	streamer, format, err := mp3.Decode(file)
+	if err != nil {
+		return err
+	}
+	defer streamer.Close()
+
+	// Configurer le lecteur audio
+	err = speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	if err != nil {
+		return err
+	}
+
+	// Lecture de l'audio une seule fois
+	done := make(chan struct{})
+	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
+		os.Exit(1)
+		close(done)
+	})))
+
+	// Attendre que la lecture soit terminée
+
+	<-done
+	speaker.Close()
+	// Arrêter le lecteur audio
+
+	return nil
 }

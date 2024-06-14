@@ -3,12 +3,7 @@ package pkg
 import (
 	"fmt"
 	"image/color"
-	"os"
-	"time"
 
-	"github.com/faiface/beep"
-	"github.com/faiface/beep/mp3"
-	"github.com/faiface/beep/speaker"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
@@ -50,11 +45,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
 	if g.board.gameOver {
 		ebitenutil.DebugPrint(screen, fmt.Sprintf("Vous avez perdu. Votre score: %d", g.board.points))
+		ebitenutil.DebugPrintAt(screen, "Game Over!", 200, 250)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Score: %d", g.board.points), 200, 270)
 
-		err := playAudio("medias/fail.mp3")
+		/* err := playAudio("medias/fail.mp3")
 		if err != nil {
-			panic(err)
-		}
+			fmt.Println("Error playing audio:", err)
+		} else {
+			fmt.Println("Audio played successfully!")
+		} */
 
 	} else {
 		width := ScreenHeight / boardRows
@@ -67,40 +66,4 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 		ebitenutil.DebugPrint(screen, fmt.Sprintf("votre score: %d", g.board.points))
 	}
-}
-
-func playAudio(filePath string) error {
-	// Ouvrir le fichier audio
-	file, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	// Décoder le fichier audio
-	streamer, format, err := mp3.Decode(file)
-	if err != nil {
-		return err
-	}
-	defer streamer.Close()
-
-	// Configurer le lecteur audio
-	err = speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-	if err != nil {
-		return err
-	}
-
-	// Lecture de l'audio une seule fois
-	done := make(chan struct{})
-	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
-		close(done)
-	})))
-
-	// Attendre que la lecture soit terminée
-
-	<-done
-	speaker.Close()
-	// Arrêter le lecteur audio
-
-	return nil
 }
