@@ -50,6 +50,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
 	if g.board.gameOver {
 		ebitenutil.DebugPrint(screen, fmt.Sprintf("Vous avez perdu. Votre score: %d", g.board.points))
+
+		err := playAudio("medias/fail.mp3")
+		if err != nil {
+			panic(err)
+		}
+
 	} else {
 		width := ScreenHeight / boardRows
 
